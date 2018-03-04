@@ -90,7 +90,7 @@ defmodule EvercamMedia.SnapshotExtractor.Extractor do
     startdate_iso = convert_to_iso(start_date)
     enddate_iso = start_date |> Calendar.DateTime.advance!(10) |> convert_to_iso
     stream_url = "#{url}?starttime=#{startdate_iso}&endtime=#{enddate_iso}"
-    Porcelain.shell("ffmpeg -rtsp_transport tcp -stimeout 10000000 -i '#{stream_url}' -vframes 1 -y #{images_path}").out
+    Porcelain.shell("ffmpeg -rtsp_transport tcp -stimeout 100000000 -i '#{stream_url}' -vframes 1 -y #{images_path}").out
     spawn(fn ->
       File.exists?(images_path)
       |> upload_image(images_path, upload_image_path)
