@@ -83,7 +83,8 @@ defmodule EvercamMediaWeb.NVRController do
           end_date: convert_timestamp(end_date),
           interval: String.to_integer(interval),
           schedule: get_schedule(params["schedule"]),
-          requester: params["requester"]
+          requester: params["requester"],
+          mp4: params["mp4"]
         }
 
       config

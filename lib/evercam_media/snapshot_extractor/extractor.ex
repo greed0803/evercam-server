@@ -47,15 +47,15 @@ defmodule EvercamMedia.SnapshotExtractor.Extractor do
       File.mkdir_p(images_directory)
       kill_ffmpeg_pids(config.host, config.port, config.username, config.password)
       {:ok, _, _, status} = Calendar.DateTime.diff(start_date, end_date)
-      iterate(status, config, url, start_date, end_date, images_directory, upload_path)
+      iterate(status, config, url, start_date, end_date, images_directory, upload_path, 1)
     end
   end
 
-  defp iterate(:before, config, url, start_date, end_date, path, upload_path) do
+  defp iterate(:before, config, url, start_date, end_date, path, upload_path, index) do
     case scheduled_now?(config.schedule, start_date, "UTC") do
       {:ok, true} ->
         Logger.debug "Extracting snapshot from NVR."
-        extract_image(url, start_date, path, upload_path)
+        extract_image(url, start_date, path, upload_path, index)
       {:ok, false} ->
         Logger.debug "Not Scheduled. Skip extracting snapshot from NVR."
       {:error, _message} ->
@@ -63,14 +63,24 @@ defmodule EvercamMedia.SnapshotExtractor.Extractor do
     end
     next_start_date = start_date |> Calendar.DateTime.advance!(config.interval)
     {:ok, _, _, status} = Calendar.DateTime.diff(next_start_date, end_date)
-    iterate(status, config, url, next_start_date, end_date, path, upload_path)
+    iterate(status, config, url, next_start_date, end_date, path, upload_path, index + 1)
   end
-  defp iterate(_status, config, _url, start_date, end_date, path, _upload_path) do
+  defp iterate(_status, config, _url, start_date, end_date, path, upload_path, _index) do
     :timer.sleep(:timer.seconds(5))
+    create_video_mp4(config.mp4, config, path, upload_path)
     update_snapshot_extractor(config, path)
     clean_images(path)
     Logger.debug "Start date (#{start_date}) greater than end date (#{end_date})."
   end
+
+  defp create_video_mp4(true, config, path, upload_path) do
+    Porcelain.shell("ffmpeg -r 6 -i #{path}%d.jpg -c:v h264_nvenc -r 6 -preset slow -bufsize 1000k -pix_fmt yuv420p -y #{path}#{config.exid}.mp4", [err: :out]).out
+    spawn(fn ->
+      File.exists?("#{path}#{config.exid}.mp4")
+      |> upload_image("#{path}#{config.exid}.mp4", "#{upload_path}#{config.exid}.mp4")
+    end)
+  end
+  defp create_video_mp4(false, _config, _path, _upload_path), do: :nothing
 
   defp update_snapshot_extractor(config, path) do
     snapshot_extractor = SnapshotExtractor.by_id(config.id)
@@ -89,14 +99,15 @@ defmodule EvercamMedia.SnapshotExtractor.Extractor do
     end
   end
 
-  defp extract_image(url, start_date, path, upload_path) do
+  defp extract_image(url, start_date, path, upload_path, index) do
     image_name = start_date |> Calendar.Strftime.strftime!("%Y-%m-%d-%H-%M-%S")
-    images_path = "#{path}#{image_name}.jpg"
+    images_path = "#{path}#{index}.jpg"
     upload_image_path = "#{upload_path}#{image_name}.jpg"
+    Porcelain.shell("printf #{image_name} > #{path}CURRENT").out
     startdate_iso = convert_to_iso(start_date)
     enddate_iso = start_date |> Calendar.DateTime.advance!(10) |> convert_to_iso
     stream_url = "#{url}?starttime=#{startdate_iso}&endtime=#{enddate_iso}"
-    Porcelain.shell("ffmpeg -rtsp_transport tcp -stimeout 10000000 -i '#{stream_url}' -vframes 1 -y #{images_path}").out
+    Porcelain.shell("ffmpeg -rtsp_transport tcp -stimeout 100000000 -i '#{stream_url}' -vframes 1 -y #{images_path}").out
     spawn(fn ->
       File.exists?(images_path)
       |> upload_image(images_path, upload_image_path)
