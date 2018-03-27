@@ -103,7 +103,7 @@ defmodule EvercamMedia.SnapshotExtractor.Extractor do
     image_name = start_date |> Calendar.Strftime.strftime!("%Y-%m-%d-%H-%M-%S")
     images_path = "#{path}#{index}.jpg"
     upload_image_path = "#{upload_path}#{image_name}.jpg"
-    Porcelain.shell("printf #{image_name} > #{path}CURRENT").out
+    save_current_jpeg_time(image_name, path)
     startdate_iso = convert_to_iso(start_date)
     enddate_iso = start_date |> Calendar.DateTime.advance!(10) |> convert_to_iso
     stream_url = "#{url}?starttime=#{startdate_iso}&endtime=#{enddate_iso}"
@@ -125,6 +125,10 @@ defmodule EvercamMedia.SnapshotExtractor.Extractor do
 
   defp nvr_url(ip, port, username, password, channel) do
     "rtsp://#{username}:#{password}@#{ip}:#{port}/Streaming/tracks/#{channel}"
+  end
+
+  defp save_current_jpeg_time(name, path) do
+    File.write!("#{path}CURRENT", name)
   end
 
   defp convert_to_iso(datetime) do

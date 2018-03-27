@@ -4,7 +4,7 @@ defmodule SnapshotExtractor do
   import Ecto.Query
   alias EvercamMedia.Repo
 
-  @required_fields ~w(camera_id to_date from_date status interval schedule)
+  @required_fields ~w(camera_id to_date from_date status interval schedule mp4)
   @optional_fields ~w(notes requestor updated_at created_at)
 
   schema "snapshot_extractors" do
@@ -17,6 +17,7 @@ defmodule SnapshotExtractor do
     field :status, :integer
     field :notes, :string
     field :requestor, :string
+    field :mp4, :boolean
     timestamps(inserted_at: :created_at, type: Ecto.DateTime, default: Ecto.DateTime.utc)
   end
 

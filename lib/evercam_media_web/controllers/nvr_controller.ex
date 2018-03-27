@@ -115,7 +115,8 @@ defmodule EvercamMediaWeb.NVRController do
         interval: config.interval,
         schedule: config.schedule,
         status: 11,
-        requestor: get_requester(requester, user)
+        requestor: get_requester(requester, user),
+        mp4: config.mp4
       }
     SnapshotExtractor.changeset(%SnapshotExtractor{}, params)
   end
