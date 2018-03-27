@@ -69,7 +69,6 @@ defmodule EvercamMedia.SnapshotExtractor.Extractor do
     :timer.sleep(:timer.seconds(5))
     create_video_mp4(config.mp4, config, path, upload_path)
     update_snapshot_extractor(config, path)
-    clean_images(path)
     Logger.debug "Start date (#{start_date}) greater than end date (#{end_date})."
   end
 
@@ -78,6 +77,7 @@ defmodule EvercamMedia.SnapshotExtractor.Extractor do
     spawn(fn ->
       File.exists?("#{path}#{config.exid}.mp4")
       |> upload_image("#{path}#{config.exid}.mp4", "#{upload_path}#{config.exid}.mp4")
+      clean_images(path)
     end)
   end
   def create_video_mp4(_, _config, _path, _upload_path), do: :nothing
