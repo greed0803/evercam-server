@@ -73,14 +73,14 @@ defmodule EvercamMedia.SnapshotExtractor.Extractor do
     Logger.debug "Start date (#{start_date}) greater than end date (#{end_date})."
   end
 
-  defp create_video_mp4(true, config, path, upload_path) do
+  def create_video_mp4("true", config, path, upload_path) do
     Porcelain.shell("ffmpeg -r 6 -i #{path}%d.jpg -c:v h264_nvenc -r 6 -preset slow -bufsize 1000k -pix_fmt yuv420p -y #{path}#{config.exid}.mp4", [err: :out]).out
     spawn(fn ->
       File.exists?("#{path}#{config.exid}.mp4")
       |> upload_image("#{path}#{config.exid}.mp4", "#{upload_path}#{config.exid}.mp4")
     end)
   end
-  defp create_video_mp4(false, _config, _path, _upload_path), do: :nothing
+  def create_video_mp4(_, _config, _path, _upload_path), do: :nothing
 
   defp update_snapshot_extractor(config, path) do
     snapshot_extractor = SnapshotExtractor.by_id(config.id)
