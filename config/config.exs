@@ -75,6 +75,12 @@ config :evercam_media, :phoenix_swagger,
     ]
   }
 
+config :evercam_media,
+  bot_name: "testevercam_bot"
+
+config :nadia,
+  token: "575974347:AAGm5BM4w0pp9EEHYTv7NpKF-5VMLLTZ7GA"
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env}.exs"
