@@ -85,6 +85,26 @@ defmodule EvercamMediaWeb.CompareController do
     end
   end
 
+  swagger_path :create do
+    post "/cameras/{id}/compares"
+    summary "Create new compare."
+    parameters do
+      id :path, :string, "Unique identifier for the camera.", required: true
+      exid :query, :string, "Unique identifier for the compare.", required: true
+      name :query, :string, "", required: true
+      before_date :query, :string, "Unix timestamp", required: true
+      after_date :query, :string, "Unix timestamp", required: true
+      embed :query, :string, "", required: true
+      create_animation :query, :boolean, "", required: true
+      api_id :query, :string, "The Evercam API id for the requester."
+      api_key :query, :string, "The Evercam API key for the requester."
+    end
+    tag "Compares"
+    response 201, "Success"
+    response 401, "Invalid API keys or Unauthorized"
+    response 404, "Camera does not exist"
+  end
+
   def create(conn, %{"id" => camera_exid} = params) do
     current_user = conn.assigns[:current_user]
     camera = Camera.get_full(camera_exid)
