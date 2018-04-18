@@ -2390,9 +2390,23 @@
           {
             "type": "string",
             "required": true,
+            "name": "before_image",
+            "in": "query",
+            "description": "Before image in base64 format."
+          },
+          {
+            "type": "string",
+            "required": true,
             "name": "after_date",
             "in": "query",
             "description": "Unix timestamp"
+          },
+          {
+            "type": "string",
+            "required": true,
+            "name": "after_image",
+            "in": "query",
+            "description": "After image in base64 format."
           },
           {
             "type": "string",

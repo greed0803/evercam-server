@@ -93,7 +93,9 @@ defmodule EvercamMediaWeb.CompareController do
       exid :query, :string, "Unique identifier for the compare.", required: true
       name :query, :string, "", required: true
       before_date :query, :string, "Unix timestamp", required: true
+      before_image :query, :string, "Before image in base64 format.", required: true
       after_date :query, :string, "Unix timestamp", required: true
+      after_image :query, :string, "After image in base64 format.", required: true
       embed :query, :string, "", required: true
       create_animation :query, :boolean, "", required: true
       api_id :query, :string, "The Evercam API id for the requester."
