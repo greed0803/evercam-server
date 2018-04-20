@@ -9,6 +9,10 @@ config :hackney,
   :timeout, 15000
 
 # Configures the endpoint
+config :nadia,
+  token: env[token]
+  #recv_timeout: 15
+
 config :evercam_media, EvercamMediaWeb.Endpoint,
   check_origin: false,
   url: [host: "localhost"],
@@ -78,8 +82,11 @@ config :evercam_media, :phoenix_swagger,
 config :evercam_media,
   bot_name: "testevercam_bot"
 
-config :nadia,
-  token: "575974347:AAGm5BM4w0pp9EEHYTv7NpKF-5VMLLTZ7GA"
+#config :porcelain,
+#  driver: Porcelain.Driver.Basic
+
+config :porcelain,
+  goon_warn_if_missing: false
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

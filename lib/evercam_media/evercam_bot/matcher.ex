@@ -9,13 +9,13 @@ defmodule EvercamMedia.EvercamBot.Matcher do
   end
 
   def init(:ok) do
-    {:ok, 0}
+    {:producer, 0}
   end
 
   def handle_cast(message, state) do
-    Commands.match_message message
+    Commands.match_message(message)
 
-    {:noreply, state}
+    {:noreply, [], state}
   end
 
   # Client

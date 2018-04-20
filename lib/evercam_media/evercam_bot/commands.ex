@@ -9,7 +9,19 @@ defmodule EvercamMedia.EvercamBot.Commands do
   command ["start"] do
     # Logger module injected from App.Commander
     Logger.log :info, "Command /start"
-    send_message "Wellcome, write /cam to start"
+    send_message "Wellcome, write anything to show the main menu or /help to show the list of commands"
+  end
+
+  command ["help"] do
+    # Logger module injected from App.Commander
+    Logger.log :info, "Command /help"
+    send_message "Commands:
+    - /start -> Show the initial message
+    - /hello - /hi -> Send 'Hello World!' :)
+    - /liveview -> List the cameras availables to show the live view
+    - /date -> Get the image of a camera in one specific date
+    - /comparison -> Get a video of the last comparison
+    - /timelapse -> Get a video of the last timelapse"
   end
 
   # You can create commands in the format `/command` by
@@ -29,96 +41,91 @@ defmodule EvercamMedia.EvercamBot.Commands do
     send_message "Hello World!"
   end
 
-  command "cam" do
-    Logger.log :info, "Command /cam"
-    id = update.message.chat.username
-    usu = File.read!("users")
-    usu2 = String.split(usu, " ")
-    for n <- usu2 do
-      if  id == n do
-        camera1 = "esb2-uascg"
-        camera2 = "stewart-harcourt"
-        camera3 = "hik-ptz-herbst"
-        camera4 = "gpocam"
-
-        {:ok, _} = send_message "Select a camera to show:",
-          # Nadia.Model is aliased from App.Commander
-          #
-          # See also: https://hexdocs.pm/nadia/Nadia.Model.InlineKeyboardMarkup.html
-          reply_markup: %Model.InlineKeyboardMarkup{
-            inline_keyboard: [
-              [
-                %{
-                  callback_data: "/choose cam1",
-                  text: "\xF0\x9F\x93\xB9 #{camera1}",
-                },
-                %{
-                  callback_data: "/choose cam2",
-                  text: "\xF0\x9F\x93\xB9 #{camera2}",
-                },
-
-              ],
-              [
-                # Read about fallbacks in the end of the file
-                %{
-                  callback_data: "/typo-:p",
-                  text: "\xF0\x9F\x93\xB9 #{camera3}",
-                },
-                %{
-                  callback_data: "/choose cam4",
-                  text: "\xF0\x9F\x93\xB9 #{camera4}",
-                },
-              ]
-            ]
-          }
-        end
-    end
-  end
-
-  #<% @cameras.each do |camera| %>
-  #  <% css = "onlinec"
-  #    thumbnail_url = "https://media.evercam.io/v1/cameras/#{camera['id']}/thumbnail?api_id=#{current_user.api_id}&api_key=#{current_user.api_key}"
-  #    unless !camera['is_online']
-  #      css = "offlinec"
-  #    end
-  #  %>
-  #  <option class="<%= css %>" value="<%= camera['id'] %>" data-val="<%= thumbnail_url %>">
-  #    <%= camera['name'] %> <% unless camera['is_online'] %>(Offline)<% end %> <% unless camera['is_public'] %><% end %>
-  #  </option>
-  #<% end %>
-
   # You can create command interfaces for callback querys using this macro.
   callback_query_command "choose" do
     Logger.log :info, "Callback Query Command /choose"
 
     case update.callback_query.data do
-      "/choose cam1" ->
-        camera1 = "esb2-uascg"
-        api_id= env["api_id"]
-        api_key= env["api_key"]
-        url = URI.parse("https://api.evercam.io/v1/cameras/#{camera1}/live/snapshot?api_id=#{api_id}&api_key=#{api_key}")
+      "/choose live" ->
+            camera1 = env[camera1]
+            camera2 = env[camera2]
+            camera3 = env[camera3]
+            camera4 = env[camera4]
+
+            {:ok, _} = send_message "Select a camera:",
+              # Nadia.Model is aliased from App.Commander
+              #
+              # See also: https://hexdocs.pm/nadia/Nadia.Model.InlineKeyboardMarkup.html
+              reply_markup: %Model.InlineKeyboardMarkup{
+                inline_keyboard: [
+                  [
+                    %{
+                      callback_data: "/choose cam1",
+                      text: "\xF0\x9F\x93\xB9 #{camera1}",
+                    },
+                    %{
+                      callback_data: "/choose cam2",
+                      text: "\xF0\x9F\x93\xB9 #{camera2}",
+                    },
+
+                  ],
+                  [
+                    # Read about fallbacks in the end of the file
+                    %{
+                      callback_data: "/typo-:p",
+                      text: "\xF0\x9F\x93\xB9 #{camera3}",
+                    },
+                    %{
+                      callback_data: "/choose cam4",
+                      text: "\xF0\x9F\x93\xB9 #{camera4}",
+                    },
+                  ]
+                ]
+              }
+
+      "/choose comparison" ->
+        send_message "Comparison"
+
+      "/choose date" ->
+        send_message "Date"
+
+      "/choose timelapse" ->
+        camera1 = env[camera1]
+        api_id = env[api_id]
+        api_key = env[api_key]
+        #url = URI.parse("https://api.evercam.io/v1/cameras/#{camera1}/live/snapshot?api_id=#{api_id}&api_key=#{api_key}")
+        url = URI.parse("/v1/cameras/#{camera1}/timelapses?api_id=#{api_id}&api_key=#{api_key}")
         %HTTPoison.Response{body: body} = HTTPoison.get!(url, [], [timeout: 10_000, recv_timeout: 10_000])
         File.write!("image.png", body)
         send_photo("image.png")
-        #"https://media.evercam.io/v1/cameras/#{camera1}/thumbnail?api_id=#{api_id}&api_key=#{api_key}"
+
+      "/choose cam1" ->
+        camera1 = env[camera1]
+        api_id = env[api_id]
+        api_key = env[api_key]
+        #url = URI.parse("https://api.evercam.io/v1/cameras/#{camera1}/live/snapshot?api_id=#{api_id}&api_key=#{api_key}")
+        url = URI.parse("/v1/cameras/#{camera_exid}/live/snapshot?api_id=#{context[:user].api_id}&api_key=#{context[:user].api_key}")
+        %HTTPoison.Response{body: body} = HTTPoison.get!(url, [], [timeout: 10_000, recv_timeout: 10_000])
+        File.write!("image.png", body)
+        send_photo("image.png")
       "/choose cam2" ->
-        camera2 = "stewart-harcourt"
-        api_id= env["api_id"]
-        api_key= env["api_key"]
+        camera2 = env[camera2]
+        api_id= env[api_id]
+        api_key= env[api_key]
         url = URI.parse("https://api.evercam.io/v1/cameras/#{camera2}/live/snapshot?api_id=#{api_id}&api_key=#{api_key}")
         %HTTPoison.Response{body: body} = HTTPoison.get!(url, [], [timeout: 10_000, recv_timeout: 10_000])
         File.write!("image.png", body)
         send_photo("image.png")
         answer_callback_query text: "Second camera"
       "/choose cam4" ->
-        camera4 = "gpocam"
-        api_id= env["api_id"]
-        api_key= env["api_key"]
+        camera4 = env[camera4]
+        api_id= env[api_id]
+        api_key= env[api_key]
         url = URI.parse("https://api.evercam.io/v1/cameras/#{camera4}/live/snapshot?api_id=#{api_id}&api_key=#{api_key}")
         %HTTPoison.Response{body: body} = HTTPoison.get!(url, [], [timeout: 10_000, recv_timeout: 10_000])
         File.write!("image.png", body)
         send_photo("image.png")
-    end
+      end
   end
 
   # You may also want make commands when in inline mode.
@@ -172,7 +179,7 @@ defmodule EvercamMedia.EvercamBot.Commands do
   # Rescues any unmatched callback query.
   callback_query do
     Logger.log :warn, "Did not match any callback query"
-    camera3 = "hik-ptz-herbst"
+    camera3 = env[camera3]
     answer_callback_query text: "#{camera3} offline"
   end
 
@@ -204,12 +211,12 @@ defmodule EvercamMedia.EvercamBot.Commands do
       usu2 = String.split(usu, " ")
       for n <- usu2 do
         if  id == n do
-          camera1 = "esb2-uascg"
-          camera2 = "stewart-harcourt"
-          camera3 = "hik-ptz-herbst"
-          camera4 = "gpocam"
+          camera1 = env[camera1]
+          camera2 = env[camera2]
+          camera3 = env[camera3]
+          camera4 = env[camera4]
 
-          {:ok, _} = send_message "Select a camera to show:",
+          {:ok, _} = send_message "what do you want to see?",
             # Nadia.Model is aliased from App.Commander
             #
             # See also: https://hexdocs.pm/nadia/Nadia.Model.InlineKeyboardMarkup.html
@@ -217,24 +224,32 @@ defmodule EvercamMedia.EvercamBot.Commands do
               inline_keyboard: [
                 [
                   %{
-                    callback_data: "/choose cam1",
-                    text: "\xF0\x9F\x93\xB9 #{camera1}",
+                    callback_data: "/choose live",
+                    text: "Live view",
+                    #callback_data: "/choose cam1",
+                    #text: "\xF0\x9F\x93\xB9 #{camera1}",
                   },
                   %{
-                    callback_data: "/choose cam2",
-                    text: "\xF0\x9F\x93\xB9 #{camera2}",
+                    callback_data: "/choose date",
+                    text: "Image of a day",
+                    #callback_data: "/choose cam2",
+                    #text: "\xF0\x9F\x93\xB9 #{camera2}",
                   },
 
                 ],
                 [
                   # Read about fallbacks in the end of the file
                   %{
-                    callback_data: "/typo-:p",
-                    text: "\xF0\x9F\x93\xB9 #{camera3}",
+                    callback_data: "/choose comparison",
+                    text: "Comparison",
+                    #callback_data: "/typo-:p",
+                    #text: "\xF0\x9F\x93\xB9 #{camera3}",
                   },
                   %{
-                    callback_data: "/choose cam4",
-                    text: "\xF0\x9F\x93\xB9 #{camera4}",
+                    callback_data: "/choose timelapse",
+                    text: "Timelapse",
+                    #callback_data: "/choose cam4",
+                    #text: "\xF0\x9F\x93\xB9 #{camera4}",
                   },
                 ]
               ]

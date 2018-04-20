@@ -5,20 +5,20 @@ defmodule EvercamMedia.EvercamBot.Poller do
   # Server
 
   def start_link() do
-    Logger.log :info, "Started poller"
-    GenStage.start_link(__MODULE__, :ok)
+    Logger.log :info, "Started poller evercam_bot"
+    GenStage.start_link __MODULE__, :ok, name: __MODULE__
   end
 
-  def init(:producer) do
+  def init(:ok) do
     update()
     {:producer, 0}
   end
 
-  def handle_cast(:update, offset) do
-    new_offset = Nadia.get_updates([offset: offset])
+  def handle_cast(:update, new_offset) do
+    new_offset = Nadia.get_updates([offset: new_offset, timeout: 60])
                  |> process_messages
 
-    {:noreply, new_offset + 1, 100}
+    {:noreply, [update()], new_offset + 1}
   end
 
   def handle_info(:timeout, offset) do
@@ -29,7 +29,7 @@ defmodule EvercamMedia.EvercamBot.Poller do
   # Client
 
   def update do
-    GenStage.cast(__MODULE__, :update)
+    GenStage.cast __MODULE__, :update
   end
 
   # Helpers

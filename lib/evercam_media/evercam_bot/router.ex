@@ -10,7 +10,7 @@ defmodule EvercamMedia.EvercamBot.Router do
 
       def match_message(message) do
         try do
-          apply(__MODULE__, :do_match_message, [message])
+          apply __MODULE__, :do_match_message, [message]
         rescue
           err in FunctionClauseError ->
             Logger.log :warn, """
