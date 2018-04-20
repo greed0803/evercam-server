@@ -85,6 +85,28 @@ defmodule EvercamMediaWeb.CompareController do
     end
   end
 
+  swagger_path :create do
+    post "/cameras/{id}/compares"
+    summary "Create new compare."
+    parameters do
+      id :path, :string, "Unique identifier for the camera.", required: true
+      exid :query, :string, "Unique identifier for the compare.", required: true
+      name :query, :string, "", required: true
+      before_date :query, :string, "Unix timestamp", required: true
+      before_image :query, :string, "Before image in base64 format.", required: true
+      after_date :query, :string, "Unix timestamp", required: true
+      after_image :query, :string, "After image in base64 format.", required: true
+      embed :query, :string, "", required: true
+      create_animation :query, :boolean, "", required: true
+      api_id :query, :string, "The Evercam API id for the requester."
+      api_key :query, :string, "The Evercam API key for the requester."
+    end
+    tag "Compares"
+    response 201, "Success"
+    response 401, "Invalid API keys or Unauthorized"
+    response 404, "Camera does not exist"
+  end
+
   def create(conn, %{"id" => camera_exid} = params) do
     current_user = conn.assigns[:current_user]
     camera = Camera.get_full(camera_exid)
@@ -96,8 +118,8 @@ defmodule EvercamMediaWeb.CompareController do
         requested_by: current_user.id,
         camera_id: camera.id,
         name: params["name"],
-        before_date: convert_to_datetime(params["before"]),
-        after_date: convert_to_datetime(params["after"]),
+        before_date: convert_to_datetime(params["before_date"]),
+        after_date: convert_to_datetime(params["after_date"]),
         embed_code: params["embed"],
         exid: params["exid"]
       }
@@ -153,8 +175,8 @@ defmodule EvercamMediaWeb.CompareController do
   defp get_content_type("mp4"), do: "video/mp4"
 
   defp start_export(true, camera_exid, compare_exid, params) do
-    spawn fn -> do_export_image(camera_exid, compare_exid, String.to_integer(params["before"]), params["before_image"], "start") end
-    spawn fn -> do_export_image(camera_exid, compare_exid, String.to_integer(params["after"]), params["after_image"], "end") end
+    spawn fn -> do_export_image(camera_exid, compare_exid, String.to_integer(params["before_date"]), params["before_image"], "start") end
+    spawn fn -> do_export_image(camera_exid, compare_exid, String.to_integer(params["after_date"]), params["after_image"], "end") end
     spawn fn -> create_animated(params["create_animation"], camera_exid, compare_exid, params["before_image"], params["after_image"]) end
   end
   defp start_export(_is_run, _camera_exid, _compare_exid, _params), do: :nothing
