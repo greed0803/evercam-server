@@ -18,28 +18,10 @@ defmodule EvercamMedia.SnapshotExtractor.ExtractorSupervisor do
 
   def initiate_workers do
     Logger.info "Initiate workers for extractor."
-    in_processing_extractors = SnapshotExtractor.by_status(11)
-
-    cameras =
-      in_processing_extractors
-      |> Enum.map(fn(x) -> x.camera_id end)
-      |> Enum.uniq
-
-    extractor_by_camera_id =
-      in_processing_extractors
-      |> Enum.group_by(&(&1.camera_id))
-
-    cameras
-    |> Enum.each(fn(camera_id) ->
-      extractor_by_camera_id[camera_id]
-      |> start_extractor_process()
-    end)
-  end
-
-  def start_extractor_process(extractor_list) do
-    extractor_list
+    SnapshotExtractor.by_status(11)
     |> Enum.each(fn(extractor) ->
-      start_extraction(extractor)
+      extractor
+      |> start_extraction()
     end)
   end
 
