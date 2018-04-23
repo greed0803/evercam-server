@@ -32,11 +32,11 @@ defmodule EvercamMedia.SnapshotExtractor.ExtractorSupervisor do
     cameras
     |> Enum.each(fn(camera_id) ->
       extractor_by_camera_id[camera_id]
-      |> spawn_extractor_process()
+      |> start_extractor_process()
     end)
   end
 
-  def spawn_extractor_process(extractor_list) do
+  def start_extractor_process(extractor_list) do
     extractor_list
     |> Enum.each(fn(extractor) ->
       start_extraction(extractor)
