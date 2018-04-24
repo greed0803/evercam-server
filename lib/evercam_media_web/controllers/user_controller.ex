@@ -20,6 +20,7 @@ defmodule EvercamMediaWeb.UserController do
           firstname :string, "", format: "text"
           lastname :string, "", format: "text"
           username :string, "", format: "text"
+          username_telegram :string, "", format: "text"
           password :string, "", format: "text"
           country_id :integer, ""
           email :string, "", format: "text"
@@ -97,6 +98,31 @@ defmodule EvercamMediaWeb.UserController do
 
     with :ok <- ensure_user_exists(user, username, conn),
          :ok <- password(params["password"], user, conn)
+    do
+      conn
+      |> render(UserView, "credentials.json", %{user: user})
+    end
+  end
+
+  swagger_path :credentialstelegram do
+    get "/users/telegram/{id}/credentials"
+    summary "Returns API credentials of given telegram user."
+    parameters do
+      id :path, :string, "Telegram username of the user being requested.", required: true
+    end
+    tag "Users"
+    response 200, "Success"
+    response 400, "Invalid telegram_username"
+    response 404, "User does not exit"
+  end
+
+  def credentialstelegram(conn, %{"id" => telegram_username} = params) do
+    user =
+      params["id"]
+      |> String.replace_trailing(".json", "")
+      |> User.by_telegram_username
+
+    with :ok <- ensure_telegram_exists(user, telegram_username, conn)
     do
       conn
       |> render(UserView, "credentials.json", %{user: user})
@@ -380,6 +406,11 @@ defmodule EvercamMediaWeb.UserController do
     render_error(conn, 404, "User '#{username}' does not exist.")
   end
   defp ensure_user_exists(_user, _id, _conn), do: :ok
+
+  defp ensure_telegram_exists(nil, telegram_username, conn) do
+    render_error(conn, 404, "User '#{telegram_username}' does not existdd.")
+  end
+  defp ensure_telegram_exists(_user, _id, _conn), do: :ok
 
   defp ensure_can_view(current_user, user, conn) do
     if current_user && Permission.User.can_view?(current_user, user) do

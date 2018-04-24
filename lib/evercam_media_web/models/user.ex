@@ -63,6 +63,14 @@ defmodule User do
     |> Repo.one
   end
 
+  def by_telegram_username(login) when login in["", nil], do: nil
+  def by_telegram_username(login) do
+    User
+    |> where([u], u.telegram_username == ^login)
+    |> preload(:country)
+    |> Repo.one
+  end
+
   def by_username(username) do
     User
     |> where(username: ^String.downcase(username))

@@ -10,7 +10,7 @@ config :hackney,
 
 # Configures the endpoint
 config :nadia,
-  token: env[token]
+  token: "575974347:AAFG_ePDvZ9RUHr6RJTQL2_CC2b-9aOMi_E"
   #recv_timeout: 15
 
 config :evercam_media, EvercamMediaWeb.Endpoint,
